@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap Product Page Template</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Jquery -->
+    <script src="js/jquery-1.10.2.min.js"></script>
+
+
+
+</head>
+
+<body>
+    <span id="timer01">00:00:00</span>
+    <ul>
+        <li>
+            <button id="StartBtn" onclick="timerStart()"> 開始計時</button>
+        </li>
+        <li>
+            <button onclick="timeStop()"> 暫停Stop</button>
+        </li>
+        <li>
+            <button onclick="timeclear()"> 清除歸零</button>
+        </li>
+    </ul>
+
+    <table class="table table-hover" id="responsivetable">
+        <thead>
+            <tr>
+                <th>
+                    SiteName
+                </th>
+                <th>Pollutant</th>
+                <th>Status</th>
+                <th>PM2.5_AVG</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- <tr>
+                <td>20</td>
+                <td>20</td>
+                <td>John John</td>
+                <td>五個檔案</td>
+            </tr> -->
+        </tbody>
+    </table>
+
+    <script type="text/javascript">
+        var startTime;
+        var timer;
+        var isTimerRuning = false;
+        var gapTime_start;
+        var gapTime = 0;
+
+        function timerStart() {
+            isTimerRuning = true;
+            $('#StartBtn').prop('disabled', true);
+
+            startTime = new Date();
+
+            timerLoop();
+
+        }
+
+        function timeclear() {
+            isTimerRuning = false;
+            clearTimeout(timer);
+            $('#timer01').html("00:00:00");
+            $('#StartBtn').prop('disabled', false);
+        }
+
+        function timeStop() {
+            isTimerRuning = !isTimerRuning;
+
+            if (!isTimerRuning) {
+                //stop
+                clearTimeout(timer);
+                gapTime_start = new Date();
+
+            } else {
+                //continue
+                gapTime = new Date() - gapTime_start + gapTime;
+                timerLoop();
+            }
+        }
+
+        function timerLoop() {
+
+            timer = setTimeout(function loopf() {
+
+                var runtime = new Date();
+
+                var duration = runtime - startTime - gapTime;
+
+                var display = timeUnitsFormat(duration);
+
+                $('#timer01').html(display);
+                if (!!isTimerRuning) {
+                    timer = setTimeout(loopf, 1000);
+                }
+
+            }, 1000);
+        }
+
+        function timeUnitsFormat(duration) {
+            var seconds = parseInt((duration / 1000) % 60);
+            var minutes = parseInt((duration / (1000 * 60)) % 60);
+            var hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+            return hours + ":" + minutes + ":" + seconds;
+        }
+
+        $.ajax({
+            url: "http://opendata2.epa.gov.tw/AQI.json",
+            type: "GET",
+            dataType: "json",
+            success: function (rsp) {
+
+                rsp.sort(function (a, b) {
+                    if (a.SiteName < b.SiteName) { return -1; }
+                    if (a.SiteName > b.SiteName) { return 1; }
+                    return 0;
+                })
+
+                rsp.forEach(element => {
+                    var templateHtml = "<tr>" +
+                        "<td>" + element['SiteName'] + "</td>" +
+                        "<td>" + element['Pollutant'] + "</td>" +
+                        "<td>" + element['Status'] + "</td>" +
+                        "<td>" + element['PM2.5_AVG'] + "</td>" +
+                        "</tr>";
+                    $('#tableBody').append(templateHtml);
+                });
+            }
+        });
+
+    // sum of all mutiples that are from 3 or 5.
+
+    var constant = 1000;
+    var SUM = 0;
+    for(var i=1; i <= constant; i++ ) {
+        var remainder3 = i%3;
+        var remainder5 = i%5;
+        if(remainder3 === 0 || remainder5 === 0) {
+            SUM = SUM+i;
+        }
+    }
+    console.log("答案 SUM" + SUM);
+    </script>
+
+</body>
+
+</html>
